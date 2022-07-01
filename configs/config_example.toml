@@ -1,0 +1,4 @@
+[controlapi]
+listenaddr = "localhost"
+listenport = 16500
+use_ssl = false

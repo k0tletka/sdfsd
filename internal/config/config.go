@@ -1,5 +1,16 @@
 package config
 
+import (
+	"log"
+	"os"
+
+	"github.com/BurntSushi/toml"
+)
+
+const (
+	defaultConfigFileLocation = "config.toml"
+)
+
 // RootConfig is a main struct that contains all config values from toml file
 type RootConfig struct {
 	ClientAPIConf  ClientAPIConfig  `toml:"clientapi"`
@@ -21,8 +32,20 @@ type ControlAPIConfig struct {
 type ServerAPIConfig struct {
 }
 
-func InitConfiguration() (*RootConfig, error) {
-	return defaultConfiguration(), nil
+func InitConfiguration() *RootConfig {
+	conf := defaultConfiguration()
+
+	confLocation, exist := os.LookupEnv("CONFFILE")
+	if !exist {
+		confLocation = defaultConfigFileLocation
+	}
+
+	if _, err := toml.DecodeFile(confLocation, &conf); err != nil {
+		log.Println("WARN: Can't read config file: ", err)
+		log.Println("Using default config values")
+	}
+
+	return conf
 }
 
 func defaultConfiguration() *RootConfig {

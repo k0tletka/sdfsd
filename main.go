@@ -30,10 +30,7 @@ func main() {
 }
 
 func initDependencies() (*srvconfig.ServerConfig, error) {
-	conf, err := config.InitConfiguration()
-	if err != nil {
-		return nil, err
-	}
+	conf := config.InitConfiguration()
 
 	return &srvconfig.ServerConfig{
 		Config: conf,
