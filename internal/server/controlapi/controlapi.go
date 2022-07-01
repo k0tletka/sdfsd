@@ -61,8 +61,9 @@ func (s *ControlAPI) StartServer() error {
 	case err := <-errChan:
 		return err
 	case <-s.ctx.Done():
-		s.httpServer.Shutdown(context.Background())
-		return context.Canceled
+		err := s.httpServer.Shutdown(context.Background())
+		<-errChan
+		return err
 	}
 }
 
