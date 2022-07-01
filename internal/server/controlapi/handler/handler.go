@@ -2,9 +2,10 @@ package handler
 
 import (
 	"context"
-	"github.com/k0tletka/SDFS/internal/server/config"
 	"io"
 	"net/http"
+
+	"github.com/k0tletka/SDFS/internal/server/config"
 )
 
 // ControlAPIHandler contains all handlers for Control API methods

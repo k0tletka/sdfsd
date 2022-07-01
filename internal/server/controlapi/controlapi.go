@@ -3,11 +3,13 @@ package controlapi
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/k0tletka/SDFS/internal/server/config"
-	"github.com/k0tletka/SDFS/internal/server/controlapi/handler"
 	"net/http"
 	"time"
+
+	"github.com/k0tletka/SDFS/internal/server/config"
+	"github.com/k0tletka/SDFS/internal/server/controlapi/handler"
+
+	"github.com/gorilla/mux"
 )
 
 type ControlAPI struct {
