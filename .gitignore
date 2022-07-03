@@ -1,1 +1,10 @@
 .idea
+
+# Project binary
+build/sdfsd
+
+# Tools binaries
+tools/build_data_generator/build_data
+
+# Generated go files
+internal/config/build_data_generated.go

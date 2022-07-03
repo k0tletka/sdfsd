@@ -13,14 +13,24 @@ import (
 )
 
 const (
-	projectName = "github.com/k0tletka/sdfsd"
+	projectName = "github.com/k0tletka/SDFS"
 )
 
 var (
-	artifactPath = filepath.Join(artifactsBin + artifactName)
+	artifactPath = filepath.Join(artifactsBin, artifactName)
+
+	packagesToGenerate = []string{
+		"./internal/config",
+	}
+
+	buildTools = map[string]string{
+		"tools/build_data_generator": "build_data",
+	}
 )
 
 func Build() error {
+	mg.Deps(GenerateGoFiles)
+
 	if enableSystemdUnitFile && runtime.GOOS == "linux" {
 		mg.Deps(InstallSystemdUnitFile)
 	} else if enableInitdFile && checkInitdInstalled() {
@@ -41,6 +51,33 @@ func Install() error {
 	}
 
 	return ioutil.WriteFile(filepath.Join(installPath, artifactName), sourceExec, 0755)
+}
+
+func GenerateGoFiles() error {
+	mg.Deps(BuildTools)
+
+	for _, packageToGenerate := range packagesToGenerate {
+		if err := sh.RunV("go", "generate", packageToGenerate); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func BuildTools() error {
+	for toolLocation, toolName := range buildTools {
+		err := sh.RunV("go", "build", "-o",
+			filepath.Join(toolLocation, toolName),
+			filepath.Join(toolLocation, "main.go"),
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func InstallSystemdUnitFile() error {
