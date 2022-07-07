@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/k0tletka/SDFS/internal/fs"
 	"log"
 	"os/signal"
 	"syscall"
@@ -32,8 +33,13 @@ func main() {
 
 func initDependencies() (*srvconfig.ServerConfig, error) {
 	conf := config.InitConfiguration()
+	volDispatcher, err := fs.NewVolumeDispatcher()
+	if err != nil {
+		return nil, err
+	}
 
 	return &srvconfig.ServerConfig{
-		Config: conf,
+		Config:        conf,
+		VolDispatcher: volDispatcher,
 	}, nil
 }

@@ -20,6 +20,8 @@ func (s *ControlAPI) Init(ctx context.Context, conf *config.ServerConfig) {
 	s.ctx, s.conf = ctx, conf
 
 	s.httpServer = echo.New()
+	s.httpServer.HideBanner = true
+
 	handlers := handler.NewControlAPIHandler(ctx, conf)
 
 	s.registerRoutes(handlers, s.httpServer)
