@@ -3,40 +3,26 @@ package controlapi
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/k0tletka/SDFS/internal/server/config"
 	"github.com/k0tletka/SDFS/internal/server/controlapi/handler"
-
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 )
 
 type ControlAPI struct {
 	ctx  context.Context
 	conf *config.ServerConfig
 
-	httpServer *http.Server
+	httpServer *echo.Echo
 	inited     bool
 }
 
 func (s *ControlAPI) Init(ctx context.Context, conf *config.ServerConfig) {
 	s.ctx, s.conf = ctx, conf
 
-	apiHandler := handler.NewControlAPIHandler(ctx, conf)
+	s.httpServer = echo.New()
+	handlers := handler.NewControlAPIHandler(ctx, conf)
 
-	// Init http server
-	s.httpServer = &http.Server{
-		Handler: getControlAPIRouter(apiHandler),
-		Addr: fmt.Sprintf(
-			"%s:%d",
-			conf.Config.ControlAPIConf.ListenAddr,
-			conf.Config.ControlAPIConf.ListenPort,
-		),
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
-
+	s.registerRoutes(handlers, s.httpServer)
 	s.inited = true
 }
 
@@ -50,12 +36,19 @@ func (s *ControlAPI) StartServer() error {
 
 	go func() {
 		if s.conf.Config.ControlAPIConf.UseSSL {
-			errChan <- s.httpServer.ListenAndServeTLS(
+			errChan <- s.httpServer.StartTLS(
+				fmt.Sprintf("%s:%d",
+					s.conf.Config.ControlAPIConf.ListenAddr,
+					s.conf.Config.ControlAPIConf.ListenPort,
+				),
 				s.conf.Config.ControlAPIConf.CertFilePath,
 				s.conf.Config.ControlAPIConf.KeyFilePath,
 			)
 		} else {
-			errChan <- s.httpServer.ListenAndServe()
+			errChan <- s.httpServer.Start(fmt.Sprintf("%s:%d",
+				s.conf.Config.ControlAPIConf.ListenAddr,
+				s.conf.Config.ControlAPIConf.ListenPort,
+			))
 		}
 	}()
 
@@ -67,11 +60,4 @@ func (s *ControlAPI) StartServer() error {
 		<-errChan
 		return err
 	}
-}
-
-func getControlAPIRouter(handlers *handler.ControlAPIHandler) *mux.Router {
-	router := mux.NewRouter()
-	router.HandleFunc("/hello", handlers.HelloHandler).Methods("GET")
-
-	return router
 }

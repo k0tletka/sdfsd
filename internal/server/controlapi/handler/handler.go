@@ -2,10 +2,13 @@ package handler
 
 import (
 	"context"
-	"io"
 	"net/http"
+	"time"
 
+	srvconfig "github.com/k0tletka/SDFS/internal/config"
 	"github.com/k0tletka/SDFS/internal/server/config"
+
+	"github.com/labstack/echo/v4"
 )
 
 // ControlAPIHandler contains all handlers for Control API methods
@@ -21,6 +24,10 @@ func NewControlAPIHandler(ctx context.Context, conf *config.ServerConfig) *Contr
 	}
 }
 
-func (c *ControlAPIHandler) HelloHandler(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello world!")
+func (c *ControlAPIHandler) ServiceInfoHandler(ec echo.Context) error {
+	return ec.JSON(http.StatusOK, ServiceInfoResponse{
+		VersionNumber: srvconfig.VersionNumber,
+		CommitHash:    srvconfig.CommitHash,
+		BuildTime:     time.Unix(srvconfig.BuildTimeUnix, 0),
+	})
 }

@@ -1,3 +1,5 @@
+server_name = "SDFS instance"
+
 [controlapi]
 listenaddr = "localhost"
 listenport = 16500

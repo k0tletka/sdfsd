@@ -13,6 +13,7 @@ const (
 
 // RootConfig is a main struct that contains all config values from toml file
 type RootConfig struct {
+	ServerName     string           `toml:"server_name"`
 	ClientAPIConf  ClientAPIConfig  `toml:"clientapi"`
 	ControlAPIConf ControlAPIConfig `toml:"controlapi"`
 	ServerAPIConf  ServerAPIConfig  `toml:"serverapi"`
