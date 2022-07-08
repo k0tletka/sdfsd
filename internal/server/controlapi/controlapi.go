@@ -37,20 +37,19 @@ func (s *ControlAPI) StartServer() error {
 	defer close(errChan)
 
 	go func() {
+		listenAddr := fmt.Sprintf("%s:%d",
+			s.conf.Config.ControlAPIConf.ListenAddr,
+			s.conf.Config.ControlAPIConf.ListenPort,
+		)
+
 		if s.conf.Config.ControlAPIConf.UseSSL {
 			errChan <- s.httpServer.StartTLS(
-				fmt.Sprintf("%s:%d",
-					s.conf.Config.ControlAPIConf.ListenAddr,
-					s.conf.Config.ControlAPIConf.ListenPort,
-				),
+				listenAddr,
 				s.conf.Config.ControlAPIConf.CertFilePath,
 				s.conf.Config.ControlAPIConf.KeyFilePath,
 			)
 		} else {
-			errChan <- s.httpServer.Start(fmt.Sprintf("%s:%d",
-				s.conf.Config.ControlAPIConf.ListenAddr,
-				s.conf.Config.ControlAPIConf.ListenPort,
-			))
+			errChan <- s.httpServer.Start(listenAddr)
 		}
 	}()
 
