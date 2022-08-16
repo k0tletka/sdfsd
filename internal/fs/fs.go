@@ -28,6 +28,22 @@ func NewVolumeDispatcher() (*VolumeDispatcher, error) {
 	}, nil
 }
 
+func (v *VolumeDispatcher) CreateNewVolume(volumeName string) (Volume, error) {
+	return Volume{}, nil
+}
+
+func (v *VolumeDispatcher) GetVolume(volumeName string) (Volume, error) {
+	return Volume{}, nil
+}
+
+func (v *VolumeDispatcher) UpdateVolumeInfo(volumeName string) error {
+	return nil
+}
+
+func (v *VolumeDispatcher) DeleteVolume(volumeName string) error {
+	return nil
+}
+
 type Volume struct {
 	name        string
 	storagePath string
