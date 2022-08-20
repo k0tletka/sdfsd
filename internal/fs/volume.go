@@ -1,18 +1,17 @@
 package fs
 
 import (
-	"github.com/k0tletka/SDFS/internal/fs/enum"
-	"github.com/k0tletka/SDFS/internal/fs/volstorage"
+	"github.com/k0tletka/SDFS/internal/fs/storage"
 )
 
 type Volume struct {
 	name        string
 	storagePath string
 	volumeSize  uint64
-	workMode    enum.VolumeMode
+	pool        string
 }
 
-func (v *Volume) ApplySettings(settings *volstorage.VolumeConfig) {
+func (v *Volume) ApplySettings(settings *storage.VolumeConfig) {
 	if settings.Name != "" {
 		v.name = settings.Name
 	}
@@ -25,18 +24,22 @@ func (v *Volume) ApplySettings(settings *volstorage.VolumeConfig) {
 		v.volumeSize = settings.Size
 	}
 
-	if settings.Mode != 0 {
-		v.workMode = settings.Mode
+	if settings.Pool != "" {
+		v.pool = settings.Pool
 	}
 }
 
-func (v *Volume) DumpSettings() *volstorage.VolumeConfig {
-	return &volstorage.VolumeConfig{
+func (v *Volume) DumpSettings() *storage.VolumeConfig {
+	return &storage.VolumeConfig{
 		Name:        v.name,
 		StoragePath: v.storagePath,
 		Size:        v.volumeSize,
-		Mode:        v.workMode,
+		Pool:        v.pool,
 	}
+}
+
+func (v *Volume) ConnectVolumeToPool(pool *Pool) error {
+	return nil
 }
 
 func (v *Volume) checkVolumeHealth() error {

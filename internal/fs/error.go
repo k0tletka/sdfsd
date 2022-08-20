@@ -7,7 +7,8 @@ func (f FSError) Error() string {
 }
 
 const (
-	ErrVolumeNotFound     FSError = "requested volume has not beed found"
+	ErrNotFound FSError = "requested object has not beed found"
+
 	ErrVolumeAlreadyExist FSError = "volume with such name already exist"
 
 	ErrStoragePathNotDir        FSError = "passed path is not a dir"

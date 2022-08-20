@@ -1,8 +1,8 @@
 package enum
 
-type VolumeMode uint16
+type PoolMode uint16
 
 const (
-	ExtendMode VolumeMode = iota
+	ExtendMode PoolMode = iota
 	BackupMode
 )

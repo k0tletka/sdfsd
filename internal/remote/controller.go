@@ -3,6 +3,7 @@ package remote
 import (
 	"context"
 	"encoding/json"
+	"github.com/k0tletka/SDFS/internal/fs/enum"
 	"log"
 	"net"
 	"os"
@@ -23,6 +24,7 @@ type RemoteServer struct {
 	conn          net.Conn // TODO: use gRPC
 	isInitialized bool
 	remoteVolumes []RemoteVolume
+	remotePools   []RemotePool
 }
 
 func (r *RemoteServer) IsInitialized() bool {
@@ -36,6 +38,9 @@ func (r *RemoteServer) InitializeRemoteServer(ctx context.Context) error {
 	}
 
 	r.conn = conn
+	if err := r.LoadRemotePools(); err != nil {
+		return err
+	}
 	return r.LoadRemoteVolumes()
 }
 
@@ -48,10 +53,24 @@ func (r *RemoteServer) LoadRemoteVolumes() error {
 	return nil
 }
 
+func (r *RemoteServer) LoadRemotePools() error {
+	if !r.IsInitialized() {
+		return ErrRemoteServerNotInitialized
+	}
+
+	// TODO: make request to get all pools from remote server
+	return nil
+}
+
 type RemoteVolume struct {
 	ConnectionString string
 	Name             string
 	Size             uint64
+}
+
+type RemotePool struct {
+	Name string
+	Mode enum.PoolMode
 }
 
 type RemoteServerController struct {

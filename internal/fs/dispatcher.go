@@ -1,8 +1,7 @@
 package fs
 
 import (
-	"github.com/k0tletka/SDFS/internal/fs/enum"
-	"github.com/k0tletka/SDFS/internal/fs/volstorage"
+	"github.com/k0tletka/SDFS/internal/fs/storage"
 	"golang.org/x/sys/unix"
 	"os"
 )
@@ -11,15 +10,16 @@ type VolumeCreateRequest struct {
 	Name         string
 	StoragePath  string
 	AllocateSize uint64
-	WorkMode     enum.VolumeMode
+	PoolName     string
 }
 
 type VolumeDispatcher struct {
 	volumes []Volume
+	pools   []Pool
 }
 
 func NewVolumeDispatcher() (*VolumeDispatcher, error) {
-	volumeSettings, err := volstorage.ExtractAllVolumeConfigs()
+	volumeSettings, err := storage.ExtractAllVolumeConfigs()
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +35,25 @@ func NewVolumeDispatcher() (*VolumeDispatcher, error) {
 		volumes = append(volumes, newVolume)
 	}
 
+	poolSettings, err := storage.ExtractAllPoolConfigs()
+	if err != nil {
+		return nil, err
+	}
+	pools := make([]Pool, 0, len(poolSettings))
+
+	for _, poolSetting := range poolSettings {
+		newPool := Pool{}
+		newPool.ApplySettings(poolSetting)
+		if err := newPool.checkPoolHealth(); err != nil {
+			return nil, err
+		}
+
+		pools = append(pools, newPool)
+	}
+
 	return &VolumeDispatcher{
 		volumes: volumes,
+		pools:   pools,
 	}, nil
 }
 
@@ -46,17 +63,27 @@ func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (Volume, err
 		return Volume{}, err
 	}
 
-	volumeConfig := &volstorage.VolumeConfig{
+	volumeConfig := &storage.VolumeConfig{
 		Name:        req.Name,
 		StoragePath: req.StoragePath,
 		Size:        req.AllocateSize,
-		Mode:        req.WorkMode,
 	}
 
 	newVolume := Volume{}
 	newVolume.ApplySettings(volumeConfig)
 
-	if err := volstorage.SaveVolumeConfig(volumeConfig); err != nil {
+	if req.PoolName != "" {
+		pool, err := v.GetPool(req.PoolName)
+		if err != nil {
+			return Volume{}, err
+		}
+
+		if err := newVolume.ConnectVolumeToPool(&pool); err != nil {
+			return Volume{}, err
+		}
+	}
+
+	if err := storage.SaveVolumeConfig(volumeConfig); err != nil {
 		return Volume{}, err
 	}
 
@@ -70,15 +97,17 @@ func (v *VolumeDispatcher) GetVolume(volumeName string) (Volume, error) {
 		}
 	}
 
-	return Volume{}, ErrVolumeNotFound
+	return Volume{}, ErrNotFound
 }
 
-func (v *VolumeDispatcher) UpdateVolumeInfo(volumeName string) error {
-	return nil
-}
+func (v *VolumeDispatcher) GetPool(poolName string) (Pool, error) {
+	for _, pool := range v.pools {
+		if pool.name == poolName {
+			return pool, nil
+		}
+	}
 
-func (v *VolumeDispatcher) DeleteVolume(volumeName string) error {
-	return nil
+	return Pool{}, ErrNotFound
 }
 
 func (v *VolumeDispatcher) checkCreateConditions(req VolumeCreateRequest) error {
@@ -86,7 +115,7 @@ func (v *VolumeDispatcher) checkCreateConditions(req VolumeCreateRequest) error 
 		return ErrVolumeAlreadyExist
 	}
 
-	if err := v.checkCreateConditions(req); err != nil {
+	if err := v.checkStoragePathSuitability(req); err != nil {
 		return err
 	}
 
