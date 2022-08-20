@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/k0tletka/SDFS/internal/fs"
+	"github.com/k0tletka/SDFS/internal/remote"
 	"log"
 	"os/signal"
 	"syscall"
@@ -25,6 +26,10 @@ func main() {
 		syscall.SIGKILL,
 		syscall.SIGQUIT,
 	)
+
+	if err := remote.InitRemoteServersController(ctx); err != nil {
+		log.Fatalln(err)
+	}
 
 	if err := server.InitAndServeServers(ctx, srvConfig); err != nil && err != context.Canceled {
 		log.Fatalln(err)

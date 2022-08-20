@@ -1,20 +1,10 @@
 package fs
 
 import (
-	"errors"
 	"github.com/k0tletka/SDFS/internal/fs/enum"
 	"github.com/k0tletka/SDFS/internal/fs/volstorage"
 	"golang.org/x/sys/unix"
 	"os"
-)
-
-var (
-	ErrVolumeNotFound     = errors.New("requested volume has not beed found")
-	ErrVolumeAlreadyExist = errors.New("volume with such name already exist")
-
-	ErrStoragePathNotDir        = errors.New("passed path is not a dir")
-	ErrStoragePathFilesExist    = errors.New("in storage path must not be any files")
-	ErrStoragePathNotEnougtSize = errors.New("there is not enought size for new volume")
 )
 
 type VolumeCreateRequest struct {
@@ -131,43 +121,5 @@ func (v *VolumeDispatcher) checkStoragePathSuitability(req VolumeCreateRequest) 
 		return ErrStoragePathNotEnougtSize
 	}
 
-	return nil
-}
-
-type Volume struct {
-	name        string
-	storagePath string
-	volumeSize  uint64
-	workMode    enum.VolumeMode
-}
-
-func (v *Volume) ApplySettings(settings *volstorage.VolumeConfig) {
-	if settings.Name != "" {
-		v.name = settings.Name
-	}
-
-	if settings.StoragePath != "" {
-		v.storagePath = settings.StoragePath
-	}
-
-	if settings.Size != 0 {
-		v.volumeSize = settings.Size
-	}
-
-	if settings.Mode != 0 {
-		v.workMode = settings.Mode
-	}
-}
-
-func (v *Volume) DumpSettings() *volstorage.VolumeConfig {
-	return &volstorage.VolumeConfig{
-		Name:        v.name,
-		StoragePath: v.storagePath,
-		Size:        v.volumeSize,
-		Mode:        v.workMode,
-	}
-}
-
-func (v *Volume) checkVolumeHealth() error {
 	return nil
 }
