@@ -1,7 +1,7 @@
 package fs
 
 import (
-	"github.com/k0tletka/SDFS/internal/fs/storage"
+	"github.com/k0tletka/sdfsd/internal/fs/storage"
 )
 
 type Volume struct {

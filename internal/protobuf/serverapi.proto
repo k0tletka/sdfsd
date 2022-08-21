@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/k0tletka/sdfsd/internal/protobuf";
+
+message ServerInfoResponse {
+  string serverName = 1;
+  uint64 apiVersion = 2;
+}
+
+service ServerAPI {
+  rpc GetServerInfo(google.protobuf.Empty) returns (ServerInfoResponse);
+}

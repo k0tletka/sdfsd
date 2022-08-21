@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	srvconfig "github.com/k0tletka/SDFS/internal/config"
-	"github.com/k0tletka/SDFS/internal/server/config"
+	srvconfig "github.com/k0tletka/sdfsd/internal/config"
+	"github.com/k0tletka/sdfsd/internal/server/config"
 
 	"github.com/labstack/echo/v4"
 )

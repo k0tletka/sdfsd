@@ -13,7 +13,9 @@ import (
 )
 
 const (
-	projectName = "github.com/k0tletka/SDFS"
+	projectName       = "github.com/k0tletka/sdfsd"
+	protobufLocation  = "./internal/protobuf"
+	protobufProtoName = "serverapi.proto"
 )
 
 var (
@@ -30,6 +32,7 @@ var (
 
 func Build() error {
 	mg.Deps(GenerateGoFiles)
+	mg.Deps(GenerateProto)
 
 	if enableSystemdUnitFile && runtime.GOOS == "linux" {
 		mg.Deps(InstallSystemdUnitFile)
@@ -63,6 +66,17 @@ func GenerateGoFiles() error {
 	}
 
 	return nil
+}
+
+func GenerateProto() error {
+	return sh.RunV(
+		"protoc",
+		"--go_out="+protobufLocation,
+		"--go_opt=paths=source_relative",
+		"--go-grpc_out="+protobufLocation,
+		"--go-grpc_opt=paths=source_relative",
+		filepath.Join(protobufLocation, protobufProtoName),
+	)
 }
 
 func BuildTools() error {

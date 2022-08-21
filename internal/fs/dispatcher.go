@@ -1,8 +1,8 @@
 package fs
 
 import (
-	"github.com/k0tletka/SDFS/internal/fs/enum"
-	"github.com/k0tletka/SDFS/internal/fs/storage"
+	"github.com/k0tletka/sdfsd/internal/fs/enum"
+	"github.com/k0tletka/sdfsd/internal/fs/storage"
 	"golang.org/x/sys/unix"
 	"os"
 )

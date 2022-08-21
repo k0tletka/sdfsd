@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 
-	"github.com/k0tletka/SDFS/internal/server/clientapi"
-	"github.com/k0tletka/SDFS/internal/server/config"
-	"github.com/k0tletka/SDFS/internal/server/controlapi"
-	"github.com/k0tletka/SDFS/internal/server/serverapi"
+	"github.com/k0tletka/sdfsd/internal/server/clientapi"
+	"github.com/k0tletka/sdfsd/internal/server/config"
+	"github.com/k0tletka/sdfsd/internal/server/controlapi"
+	"github.com/k0tletka/sdfsd/internal/server/serverapi"
 
 	"golang.org/x/sync/errgroup"
 )

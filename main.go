@@ -2,15 +2,15 @@ package main
 
 import (
 	"context"
-	"github.com/k0tletka/SDFS/internal/fs"
-	"github.com/k0tletka/SDFS/internal/remote"
+	"github.com/k0tletka/sdfsd/internal/fs"
+	"github.com/k0tletka/sdfsd/internal/remote"
 	"log"
 	"os/signal"
 	"syscall"
 
-	"github.com/k0tletka/SDFS/internal/config"
-	"github.com/k0tletka/SDFS/internal/server"
-	srvconfig "github.com/k0tletka/SDFS/internal/server/config"
+	"github.com/k0tletka/sdfsd/internal/config"
+	"github.com/k0tletka/sdfsd/internal/server"
+	srvconfig "github.com/k0tletka/sdfsd/internal/server/config"
 )
 
 func main() {

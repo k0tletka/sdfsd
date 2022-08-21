@@ -1,7 +1,7 @@
 package controlapi
 
 import (
-	"github.com/k0tletka/SDFS/internal/server/controlapi/handler"
+	"github.com/k0tletka/sdfsd/internal/server/controlapi/handler"
 	"github.com/labstack/echo/v4"
 )
 

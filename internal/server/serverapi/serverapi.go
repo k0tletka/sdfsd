@@ -3,7 +3,7 @@ package serverapi
 import (
 	"context"
 
-	"github.com/k0tletka/SDFS/internal/server/config"
+	"github.com/k0tletka/sdfsd/internal/server/config"
 )
 
 type ServerAPI struct{}

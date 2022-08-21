@@ -3,8 +3,8 @@ package controlapi
 import (
 	"context"
 	"fmt"
-	"github.com/k0tletka/SDFS/internal/server/config"
-	"github.com/k0tletka/SDFS/internal/server/controlapi/handler"
+	"github.com/k0tletka/sdfsd/internal/server/config"
+	"github.com/k0tletka/sdfsd/internal/server/controlapi/handler"
 	"github.com/labstack/echo/v4"
 )
 

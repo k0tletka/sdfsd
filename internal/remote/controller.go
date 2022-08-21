@@ -3,7 +3,7 @@ package remote
 import (
 	"context"
 	"encoding/json"
-	"github.com/k0tletka/SDFS/internal/fs/enum"
+	"github.com/k0tletka/sdfsd/internal/fs/enum"
 	"log"
 	"net"
 	"os"

@@ -2,7 +2,7 @@ package storage
 
 import (
 	"encoding/gob"
-	"github.com/k0tletka/SDFS/internal/fs/enum"
+	"github.com/k0tletka/sdfsd/internal/fs/enum"
 	"os"
 )
 
