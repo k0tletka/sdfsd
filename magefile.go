@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	projectName       = "github.com/k0tletka/sdfsd"
-	protobufLocation  = "./internal/protobuf"
+	projectName = "github.com/k0tletka/sdfsd"
+
+	protobufOutput    = "./internal"
+	protobufLocation  = "./protobuf"
 	protobufProtoName = "serverapi.proto"
 )
 
@@ -71,9 +73,9 @@ func GenerateGoFiles() error {
 func GenerateProto() error {
 	return sh.RunV(
 		"protoc",
-		"--go_out="+protobufLocation,
+		"--go_out="+protobufOutput,
 		"--go_opt=paths=source_relative",
-		"--go-grpc_out="+protobufLocation,
+		"--go-grpc_out="+protobufOutput,
 		"--go-grpc_opt=paths=source_relative",
 		filepath.Join(protobufLocation, protobufProtoName),
 	)

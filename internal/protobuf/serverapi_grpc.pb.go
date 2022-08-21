@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.4
-// source: internal/protobuf/serverapi.proto
+// source: protobuf/serverapi.proto
 
 package protobuf
 
@@ -102,5 +102,5 @@ var ServerAPI_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/protobuf/serverapi.proto",
+	Metadata: "protobuf/serverapi.proto",
 }
