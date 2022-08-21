@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"github.com/k0tletka/SDFS/internal/fs/enum"
 	"github.com/k0tletka/SDFS/internal/fs/storage"
 	"golang.org/x/sys/unix"
 	"os"
@@ -11,6 +12,11 @@ type VolumeCreateRequest struct {
 	StoragePath  string
 	AllocateSize uint64
 	PoolName     string
+}
+
+type PoolCreateRequest struct {
+	PoolName string
+	Mode     enum.PoolMode
 }
 
 type VolumeDispatcher struct {
@@ -78,7 +84,7 @@ func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (Volume, err
 			return Volume{}, err
 		}
 
-		if err := newVolume.ConnectVolumeToPool(&pool); err != nil {
+		if err := newVolume.connectVolumeToPool(&pool); err != nil {
 			return Volume{}, err
 		}
 	}
@@ -88,6 +94,31 @@ func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (Volume, err
 	}
 
 	return newVolume, nil
+}
+
+func (v *VolumeDispatcher) CreateNewPool(req PoolCreateRequest) (Pool, error) {
+	if _, err := v.GetPool(req.PoolName); err == nil {
+		return Pool{}, ErrPoolAlreadyExist
+	}
+
+	poolConfig := &storage.PoolConfig{
+		Name: req.PoolName,
+		Mode: req.Mode,
+	}
+
+	newPool := Pool{}
+	newPool.ApplySettings(poolConfig)
+
+	if err := newPool.syncPoolWithRemoteServers(); err != nil {
+		return Pool{}, err
+	}
+
+	poolConfig.SyncedServers = newPool.syncedServers
+	if err := storage.SavePoolConfig(poolConfig); err != nil {
+		return Pool{}, err
+	}
+
+	return newPool, nil
 }
 
 func (v *VolumeDispatcher) GetVolume(volumeName string) (Volume, error) {

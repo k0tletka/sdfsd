@@ -37,6 +37,10 @@ func (p *Pool) DumpSettings() *storage.PoolConfig {
 	}
 }
 
+func (p *Pool) syncPoolWithRemoteServers() error {
+	return nil
+}
+
 func (p *Pool) checkPoolHealth() error {
 	return nil
 }

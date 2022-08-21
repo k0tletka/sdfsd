@@ -38,7 +38,7 @@ func (v *Volume) DumpSettings() *storage.VolumeConfig {
 	}
 }
 
-func (v *Volume) ConnectVolumeToPool(pool *Pool) error {
+func (v *Volume) connectVolumeToPool(pool *Pool) error {
 	return nil
 }
 
