@@ -4,3 +4,7 @@ server_name = "SDFS instance"
 listenaddr = "localhost"
 listenport = 16500
 use_ssl = false
+
+[serverapi]
+listenaddr = "localhost"
+listenport = 16501

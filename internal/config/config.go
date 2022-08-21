@@ -31,6 +31,8 @@ type ControlAPIConfig struct {
 }
 
 type ServerAPIConfig struct {
+	ListenAddr string `toml:"listenaddr"`
+	ListenPort uint16 `toml:"listenport"`
 }
 
 func InitConfiguration() *RootConfig {
