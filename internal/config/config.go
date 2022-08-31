@@ -31,8 +31,11 @@ type ControlAPIConfig struct {
 }
 
 type ServerAPIConfig struct {
-	ListenAddr string `toml:"listenaddr"`
-	ListenPort uint16 `toml:"listenport"`
+	ListenAddr   string `toml:"listenaddr"`
+	ListenPort   uint16 `toml:"listenport"`
+	UseSSL       bool   `toml:"use_ssl"`
+	CertFilePath string `toml:"cert_filepath"`
+	KeyFilePath  string `toml:"key_filepath"`
 }
 
 func InitConfiguration() *RootConfig {
@@ -53,12 +56,17 @@ func InitConfiguration() *RootConfig {
 
 func defaultConfiguration() *RootConfig {
 	return &RootConfig{
+		ServerName:    "sdfsd instance",
 		ClientAPIConf: ClientAPIConfig{},
 		ControlAPIConf: ControlAPIConfig{
 			ListenAddr: "localhost",
 			ListenPort: 16500,
 			UseSSL:     false,
 		},
-		ServerAPIConf: ServerAPIConfig{},
+		ServerAPIConf: ServerAPIConfig{
+			ListenAddr: "localhost",
+			ListenPort: 16501,
+			UseSSL:     false,
+		},
 	}
 }

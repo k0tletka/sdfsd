@@ -38,9 +38,11 @@ func (p *Pool) DumpSettings() *storage.PoolConfig {
 }
 
 func (p *Pool) syncPoolWithRemoteServers() error {
+	// TODO: Make pool syncing with other servers on creation
 	return nil
 }
 
 func (p *Pool) checkPoolHealth() error {
+	// TODO: Make check pool health on sdfsd starting
 	return nil
 }

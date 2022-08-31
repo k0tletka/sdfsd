@@ -39,9 +39,11 @@ func (v *Volume) DumpSettings() *storage.VolumeConfig {
 }
 
 func (v *Volume) connectVolumeToPool(pool *Pool) error {
+	// TODO: Make volume connection to pool
 	return nil
 }
 
 func (v *Volume) checkVolumeHealth() error {
+	// TODO: Make checking volume health parameters on sdfsd starting
 	return nil
 }
