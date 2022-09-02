@@ -2,7 +2,6 @@ package fs
 
 import (
 	"github.com/k0tletka/sdfsd/internal/fs/enum"
-	"github.com/k0tletka/sdfsd/internal/fs/storage"
 	"golang.org/x/sys/unix"
 	"os"
 )
@@ -25,7 +24,7 @@ type VolumeDispatcher struct {
 }
 
 func NewVolumeDispatcher() (*VolumeDispatcher, error) {
-	volumeSettings, err := storage.ExtractAllVolumeConfigs()
+	volumeSettings, err := extractAllVolumeConfigs()
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +32,7 @@ func NewVolumeDispatcher() (*VolumeDispatcher, error) {
 
 	for _, volumeSetting := range volumeSettings {
 		newVolume := Volume{}
-		newVolume.ApplySettings(volumeSetting)
+		newVolume.applySettings(volumeSetting)
 		if err := newVolume.checkVolumeHealth(); err != nil {
 			return nil, err
 		}
@@ -41,7 +40,7 @@ func NewVolumeDispatcher() (*VolumeDispatcher, error) {
 		volumes = append(volumes, newVolume)
 	}
 
-	poolSettings, err := storage.ExtractAllPoolConfigs()
+	poolSettings, err := extractAllPoolConfigs()
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func NewVolumeDispatcher() (*VolumeDispatcher, error) {
 
 	for _, poolSetting := range poolSettings {
 		newPool := Pool{}
-		newPool.ApplySettings(poolSetting)
+		newPool.applySettings(poolSetting)
 		if err := newPool.checkPoolHealth(); err != nil {
 			return nil, err
 		}
@@ -69,14 +68,11 @@ func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (Volume, err
 		return Volume{}, err
 	}
 
-	volumeConfig := &storage.VolumeConfig{
+	newVolume := Volume{
 		Name:        req.Name,
 		StoragePath: req.StoragePath,
-		Size:        req.AllocateSize,
+		VolumeSize:  req.AllocateSize,
 	}
-
-	newVolume := Volume{}
-	newVolume.ApplySettings(volumeConfig)
 
 	if req.PoolName != "" {
 		pool, err := v.GetPool(req.PoolName)
@@ -89,7 +85,7 @@ func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (Volume, err
 		}
 	}
 
-	if err := storage.SaveVolumeConfig(volumeConfig); err != nil {
+	if err := saveVolumeConfig(newVolume.dumpSettings()); err != nil {
 		return Volume{}, err
 	}
 
@@ -101,20 +97,15 @@ func (v *VolumeDispatcher) CreateNewPool(req PoolCreateRequest) (Pool, error) {
 		return Pool{}, ErrPoolAlreadyExist
 	}
 
-	poolConfig := &storage.PoolConfig{
-		Name: req.PoolName,
-		Mode: req.Mode,
+	newPool := Pool{
+		Name:     req.PoolName,
+		WorkMode: req.Mode,
 	}
-
-	newPool := Pool{}
-	newPool.ApplySettings(poolConfig)
 
 	if err := newPool.syncPoolWithRemoteServers(); err != nil {
 		return Pool{}, err
 	}
-
-	poolConfig.SyncedServers = newPool.syncedServers
-	if err := storage.SavePoolConfig(poolConfig); err != nil {
+	if err := savePoolConfig(newPool.dumpSettings()); err != nil {
 		return Pool{}, err
 	}
 
@@ -123,7 +114,7 @@ func (v *VolumeDispatcher) CreateNewPool(req PoolCreateRequest) (Pool, error) {
 
 func (v *VolumeDispatcher) GetVolume(volumeName string) (Volume, error) {
 	for _, volume := range v.volumes {
-		if volume.name == volumeName {
+		if volume.Name == volumeName {
 			return volume, nil
 		}
 	}
@@ -131,14 +122,26 @@ func (v *VolumeDispatcher) GetVolume(volumeName string) (Volume, error) {
 	return Volume{}, ErrNotFound
 }
 
+func (v *VolumeDispatcher) GetVolumes() []Volume {
+	res := make([]Volume, len(v.volumes))
+	copy(res, v.volumes)
+	return res
+}
+
 func (v *VolumeDispatcher) GetPool(poolName string) (Pool, error) {
 	for _, pool := range v.pools {
-		if pool.name == poolName {
+		if pool.Name == poolName {
 			return pool, nil
 		}
 	}
 
 	return Pool{}, ErrNotFound
+}
+
+func (v *VolumeDispatcher) GetPools() []Pool {
+	res := make([]Pool, len(v.pools))
+	copy(res, v.pools)
+	return res
 }
 
 func (v *VolumeDispatcher) checkCreateConditions(req VolumeCreateRequest) error {

@@ -2,22 +2,28 @@ package fs
 
 import (
 	"github.com/k0tletka/sdfsd/internal/fs/enum"
-	"github.com/k0tletka/sdfsd/internal/fs/storage"
 )
 
 type Pool struct {
-	name          string
-	workMode      enum.PoolMode
+	Name     string
+	WorkMode enum.PoolMode
+
 	syncedServers []string
 }
 
-func (p *Pool) ApplySettings(settings *storage.PoolConfig) {
+func (p *Pool) GetSyncedServers() []string {
+	res := make([]string, len(p.syncedServers))
+	copy(res, p.syncedServers)
+	return res
+}
+
+func (p *Pool) applySettings(settings *PoolConfig) {
 	if settings.Name != "" {
-		p.name = settings.Name
+		p.Name = settings.Name
 	}
 
 	if settings.Mode != 0 {
-		p.workMode = settings.Mode
+		p.WorkMode = settings.Mode
 	}
 
 	if len(settings.SyncedServers) != 0 {
@@ -26,23 +32,23 @@ func (p *Pool) ApplySettings(settings *storage.PoolConfig) {
 	}
 }
 
-func (p *Pool) DumpSettings() *storage.PoolConfig {
+func (p *Pool) dumpSettings() *PoolConfig {
 	syncedServers := make([]string, len(p.syncedServers))
 	copy(syncedServers, p.syncedServers)
 
-	return &storage.PoolConfig{
-		Name:          p.name,
-		Mode:          p.workMode,
+	return &PoolConfig{
+		Name:          p.Name,
+		Mode:          p.WorkMode,
 		SyncedServers: p.syncedServers,
 	}
 }
 
 func (p *Pool) syncPoolWithRemoteServers() error {
-	// TODO: Make pool syncing with other servers on creation
+	// TODO: Make Pool syncing with other servers on creation
 	return nil
 }
 
 func (p *Pool) checkPoolHealth() error {
-	// TODO: Make check pool health on sdfsd starting
+	// TODO: Make check Pool health on sdfsd starting
 	return nil
 }

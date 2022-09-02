@@ -1,45 +1,41 @@
 package fs
 
-import (
-	"github.com/k0tletka/sdfsd/internal/fs/storage"
-)
-
 type Volume struct {
-	name        string
-	storagePath string
-	volumeSize  uint64
-	pool        string
+	Name        string
+	StoragePath string
+	VolumeSize  uint64
+	Pool        string
 }
 
-func (v *Volume) ApplySettings(settings *storage.VolumeConfig) {
+func (v *Volume) applySettings(settings *VolumeConfig) {
 	if settings.Name != "" {
-		v.name = settings.Name
+		v.Name = settings.Name
 	}
 
 	if settings.StoragePath != "" {
-		v.storagePath = settings.StoragePath
+		v.StoragePath = settings.StoragePath
 	}
 
 	if settings.Size != 0 {
-		v.volumeSize = settings.Size
+		v.VolumeSize = settings.Size
 	}
 
 	if settings.Pool != "" {
-		v.pool = settings.Pool
+		v.Pool = settings.Pool
 	}
 }
 
-func (v *Volume) DumpSettings() *storage.VolumeConfig {
-	return &storage.VolumeConfig{
-		Name:        v.name,
-		StoragePath: v.storagePath,
-		Size:        v.volumeSize,
-		Pool:        v.pool,
+func (v *Volume) dumpSettings() *VolumeConfig {
+	return &VolumeConfig{
+		Name:        v.Name,
+		StoragePath: v.StoragePath,
+		Size:        v.VolumeSize,
+		Pool:        v.Pool,
 	}
 }
 
 func (v *Volume) connectVolumeToPool(pool *Pool) error {
-	// TODO: Make volume connection to pool
+	// TODO: Make volume connection to Pool
 	return nil
 }
 
