@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServerAPIClient interface {
 	GetServerInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ServerInfoResponse, error)
+	GetPools(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PoolListResponse, error)
+	GetPoolInfo(ctx context.Context, in *PoolInfoRequest, opts ...grpc.CallOption) (*PoolInfoResponse, error)
 }
 
 type serverAPIClient struct {
@@ -43,11 +45,31 @@ func (c *serverAPIClient) GetServerInfo(ctx context.Context, in *emptypb.Empty, 
 	return out, nil
 }
 
+func (c *serverAPIClient) GetPools(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PoolListResponse, error) {
+	out := new(PoolListResponse)
+	err := c.cc.Invoke(ctx, "/ServerAPI/GetPools", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serverAPIClient) GetPoolInfo(ctx context.Context, in *PoolInfoRequest, opts ...grpc.CallOption) (*PoolInfoResponse, error) {
+	out := new(PoolInfoResponse)
+	err := c.cc.Invoke(ctx, "/ServerAPI/GetPoolInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerAPIServer is the server API for ServerAPI service.
 // All implementations must embed UnimplementedServerAPIServer
 // for forward compatibility
 type ServerAPIServer interface {
 	GetServerInfo(context.Context, *emptypb.Empty) (*ServerInfoResponse, error)
+	GetPools(context.Context, *emptypb.Empty) (*PoolListResponse, error)
+	GetPoolInfo(context.Context, *PoolInfoRequest) (*PoolInfoResponse, error)
 	mustEmbedUnimplementedServerAPIServer()
 }
 
@@ -57,6 +79,12 @@ type UnimplementedServerAPIServer struct {
 
 func (UnimplementedServerAPIServer) GetServerInfo(context.Context, *emptypb.Empty) (*ServerInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServerInfo not implemented")
+}
+func (UnimplementedServerAPIServer) GetPools(context.Context, *emptypb.Empty) (*PoolListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPools not implemented")
+}
+func (UnimplementedServerAPIServer) GetPoolInfo(context.Context, *PoolInfoRequest) (*PoolInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPoolInfo not implemented")
 }
 func (UnimplementedServerAPIServer) mustEmbedUnimplementedServerAPIServer() {}
 
@@ -89,6 +117,42 @@ func _ServerAPI_GetServerInfo_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerAPI_GetPools_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerAPIServer).GetPools(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ServerAPI/GetPools",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerAPIServer).GetPools(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServerAPI_GetPoolInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PoolInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerAPIServer).GetPoolInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ServerAPI/GetPoolInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerAPIServer).GetPoolInfo(ctx, req.(*PoolInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServerAPI_ServiceDesc is the grpc.ServiceDesc for ServerAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -99,6 +163,14 @@ var ServerAPI_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetServerInfo",
 			Handler:    _ServerAPI_GetServerInfo_Handler,
+		},
+		{
+			MethodName: "GetPools",
+			Handler:    _ServerAPI_GetPools_Handler,
+		},
+		{
+			MethodName: "GetPoolInfo",
+			Handler:    _ServerAPI_GetPoolInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -1,14 +1,50 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
 
 option go_package = "github.com/k0tletka/sdfsd/internal/protobuf";
+
+enum PoolMode {
+  EXTEND_MODE = 0;
+  BACKUP_MODE = 1;
+}
+
+enum ErrorCode {
+  OBJECT_NOT_FOUND = 0;
+}
+
+message ErrorInfo {
+  ErrorCode errorCode = 1;
+  string errorMessage = 2;
+  google.protobuf.Struct additional = 3;
+}
+
+message Pool {
+  string poolName = 1;
+  PoolMode poolMode = 2;
+}
 
 message ServerInfoResponse {
   string serverName = 1;
   uint64 apiVersion = 2;
 }
 
+message PoolListResponse {
+  repeated Pool poolList = 1;
+}
+
+message PoolInfoRequest {
+  string poolName = 1;
+}
+
+message PoolInfoResponse {
+  ErrorInfo errorInfo = 1;
+  Pool pool = 2;
+}
+
 service ServerAPI {
   rpc GetServerInfo(google.protobuf.Empty) returns (ServerInfoResponse);
+  rpc GetPools(google.protobuf.Empty) returns (PoolListResponse);
+  rpc GetPoolInfo(PoolInfoRequest) returns (PoolInfoResponse);
 }
