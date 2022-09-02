@@ -2,11 +2,16 @@ package remote
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"github.com/k0tletka/sdfsd/internal/fs/enum"
+	pb "github.com/k0tletka/sdfsd/internal/protobuf"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
-	"net"
 	"os"
+	"time"
 )
 
 var (
@@ -15,16 +20,20 @@ var (
 
 const (
 	remoteServersConfigLocation = "/var/sdfds/remoteServers.json"
+
+	grpcRequestTimeout = 10 * time.Second
 )
 
 type RemoteServer struct {
 	ConnectionString string
+	UseSSL           bool
 	ServerName       string
 
-	conn          net.Conn // TODO: use gRPC
-	isInitialized bool
-	remoteVolumes []RemoteVolume
-	remotePools   []RemotePool
+	ctx             context.Context
+	serverApiClient pb.ServerAPIClient
+	isInitialized   bool
+	remoteVolumes   []RemoteVolume
+	remotePools     []RemotePool
 }
 
 func (r *RemoteServer) IsInitialized() bool {
@@ -32,12 +41,25 @@ func (r *RemoteServer) IsInitialized() bool {
 }
 
 func (r *RemoteServer) InitializeRemoteServer(ctx context.Context) error {
-	conn, err := net.Dial("tcp", r.ConnectionString)
+	var opts []grpc.DialOption
+
+	if r.UseSSL {
+		opts = append(opts, grpc.WithTransportCredentials(
+			credentials.NewTLS(&tls.Config{}),
+		))
+	}
+
+	r.ctx = ctx
+	ctx, cancel := context.WithTimeout(ctx, grpcRequestTimeout)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, r.ConnectionString, opts...)
 	if err != nil {
 		return err
 	}
 
-	r.conn = conn
+	r.serverApiClient = pb.NewServerAPIClient(conn)
+
 	if err := r.LoadRemotePools(); err != nil {
 		return err
 	}
@@ -59,6 +81,23 @@ func (r *RemoteServer) LoadRemotePools() error {
 	}
 
 	// TODO: make request to get all pools from remote server
+	ctx, cancel := context.WithTimeout(r.ctx, grpcRequestTimeout)
+	defer cancel()
+
+	remotePoolsResp, err := r.serverApiClient.GetPools(ctx, &emptypb.Empty{})
+	if err != nil {
+		return err
+	}
+
+	r.remotePools = make([]RemotePool, 0, len(remotePoolsResp.PoolList))
+
+	for _, pbPool := range remotePoolsResp.PoolList {
+		r.remotePools = append(r.remotePools, RemotePool{
+			Name: pbPool.PoolName,
+			Mode: enum.PoolMode(pbPool.PoolMode),
+		})
+	}
+
 	return nil
 }
 
