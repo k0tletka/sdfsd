@@ -25,6 +25,12 @@ message Pool {
   PoolMode poolMode = 2;
 }
 
+message Volume {
+  string volumeName = 1;
+  uint64 volumeSize = 2;
+  string poolName = 3;
+}
+
 message ServerInfoResponse {
   string serverName = 1;
   uint64 apiVersion = 2;
@@ -43,8 +49,13 @@ message PoolInfoResponse {
   Pool pool = 2;
 }
 
+message VolumeListResponse {
+  repeated Volume volumeList = 1;
+}
+
 service ServerAPI {
   rpc GetServerInfo(google.protobuf.Empty) returns (ServerInfoResponse);
   rpc GetPools(google.protobuf.Empty) returns (PoolListResponse);
   rpc GetPoolInfo(PoolInfoRequest) returns (PoolInfoResponse);
+  rpc GetVolumes(google.protobuf.Empty) returns (VolumeListResponse);
 }

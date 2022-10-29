@@ -75,3 +75,24 @@ func (s *ServerAPIHandler) GetPoolInfo(ctx context.Context, req *pb.PoolInfoRequ
 
 	return nil, err
 }
+
+func (s *ServerAPIHandler) GetVolumes(ctx context.Context, _ *emptypb.Empty) (*pb.VolumeListResponse, error) {
+	volumes := s.conf.VolDispatcher.GetVolumes()
+	pbVolumes := make([]*pb.Volume, 0, len(volumes))
+
+	for _, volume := range volumes {
+		if volume.Pool == "" {
+			continue
+		}
+
+		pbVolumes = append(pbVolumes, &pb.Volume{
+			VolumeName: volume.Name,
+			VolumeSize: volume.VolumeSize,
+			PoolName:   volume.Pool,
+		})
+	}
+
+	return &pb.VolumeListResponse{
+		VolumeList: pbVolumes,
+	}, nil
+}

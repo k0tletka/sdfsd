@@ -26,6 +26,7 @@ type ServerAPIClient interface {
 	GetServerInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ServerInfoResponse, error)
 	GetPools(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PoolListResponse, error)
 	GetPoolInfo(ctx context.Context, in *PoolInfoRequest, opts ...grpc.CallOption) (*PoolInfoResponse, error)
+	GetVolumes(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*VolumeListResponse, error)
 }
 
 type serverAPIClient struct {
@@ -63,6 +64,15 @@ func (c *serverAPIClient) GetPoolInfo(ctx context.Context, in *PoolInfoRequest, 
 	return out, nil
 }
 
+func (c *serverAPIClient) GetVolumes(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*VolumeListResponse, error) {
+	out := new(VolumeListResponse)
+	err := c.cc.Invoke(ctx, "/ServerAPI/GetVolumes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerAPIServer is the server API for ServerAPI service.
 // All implementations must embed UnimplementedServerAPIServer
 // for forward compatibility
@@ -70,6 +80,7 @@ type ServerAPIServer interface {
 	GetServerInfo(context.Context, *emptypb.Empty) (*ServerInfoResponse, error)
 	GetPools(context.Context, *emptypb.Empty) (*PoolListResponse, error)
 	GetPoolInfo(context.Context, *PoolInfoRequest) (*PoolInfoResponse, error)
+	GetVolumes(context.Context, *emptypb.Empty) (*VolumeListResponse, error)
 	mustEmbedUnimplementedServerAPIServer()
 }
 
@@ -85,6 +96,9 @@ func (UnimplementedServerAPIServer) GetPools(context.Context, *emptypb.Empty) (*
 }
 func (UnimplementedServerAPIServer) GetPoolInfo(context.Context, *PoolInfoRequest) (*PoolInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPoolInfo not implemented")
+}
+func (UnimplementedServerAPIServer) GetVolumes(context.Context, *emptypb.Empty) (*VolumeListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVolumes not implemented")
 }
 func (UnimplementedServerAPIServer) mustEmbedUnimplementedServerAPIServer() {}
 
@@ -153,6 +167,24 @@ func _ServerAPI_GetPoolInfo_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServerAPI_GetVolumes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerAPIServer).GetVolumes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ServerAPI/GetVolumes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerAPIServer).GetVolumes(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServerAPI_ServiceDesc is the grpc.ServiceDesc for ServerAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -171,6 +203,10 @@ var ServerAPI_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPoolInfo",
 			Handler:    _ServerAPI_GetPoolInfo_Handler,
+		},
+		{
+			MethodName: "GetVolumes",
+			Handler:    _ServerAPI_GetVolumes_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

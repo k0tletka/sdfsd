@@ -72,6 +72,24 @@ func (r *RemoteServer) LoadRemoteVolumes() error {
 	}
 
 	// TODO: make request to get all volumes from remote server
+	ctx, cancel := context.WithTimeout(r.ctx, grpcRequestTimeout)
+	defer cancel()
+
+	remoteVolumeResp, err := r.serverApiClient.GetVolumes(ctx, &emptypb.Empty{})
+	if err != nil {
+		return err
+	}
+
+	r.remoteVolumes = make([]RemoteVolume, 0, len(remoteVolumeResp.VolumeList))
+
+	for _, pbVolume := range remoteVolumeResp.VolumeList {
+		r.remoteVolumes = append(r.remoteVolumes, RemoteVolume{
+			Name: pbVolume.VolumeName,
+			Size: pbVolume.VolumeSize,
+			Pool: pbVolume.PoolName,
+		})
+	}
+
 	return nil
 }
 
@@ -102,9 +120,9 @@ func (r *RemoteServer) LoadRemotePools() error {
 }
 
 type RemoteVolume struct {
-	ConnectionString string
-	Name             string
-	Size             uint64
+	Name string
+	Size uint64
+	Pool string
 }
 
 type RemotePool struct {
