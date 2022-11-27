@@ -1,4 +1,4 @@
-package fs
+package internal
 
 import (
 	"github.com/k0tletka/sdfsd/internal/fs/enum"
@@ -11,10 +11,32 @@ type Pool struct {
 	syncedServers []string
 }
 
+func NewPoolFromConfig(config *PoolConfig) (*Pool, error) {
+	p := &Pool{}
+	p.applySettings(config)
+
+	// Check that all alright with pool
+	if err := p.checkPoolHealth(); err != nil {
+		return nil, err
+	}
+
+	// Sync pool with other servers
+	if err := p.SyncPoolWithRemoteServers(); err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
+
 func (p *Pool) GetSyncedServers() []string {
 	res := make([]string, len(p.syncedServers))
 	copy(res, p.syncedServers)
 	return res
+}
+
+func (p *Pool) SyncPoolWithRemoteServers() error {
+	// TODO: Make Pool syncing with other servers on creation
+	return p.onUpdate()
 }
 
 func (p *Pool) applySettings(settings *PoolConfig) {
@@ -43,9 +65,8 @@ func (p *Pool) dumpSettings() *PoolConfig {
 	}
 }
 
-func (p *Pool) syncPoolWithRemoteServers() error {
-	// TODO: Make Pool syncing with other servers on creation
-	return nil
+func (p *Pool) onUpdate() error {
+	return SavePoolConfig(p.dumpSettings())
 }
 
 func (p *Pool) checkPoolHealth() error {

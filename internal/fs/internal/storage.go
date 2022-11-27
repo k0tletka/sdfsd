@@ -1,4 +1,4 @@
-package fs
+package internal
 
 import (
 	"encoding/gob"
@@ -24,7 +24,7 @@ type VolumeConfig struct {
 	Pool        string
 }
 
-func extractAllVolumeConfigs() ([]*VolumeConfig, error) {
+func ExtractAllVolumeConfigs() ([]*VolumeConfig, error) {
 	dir, err := os.ReadDir(volumeObjBasePath)
 	if err != nil {
 		return nil, err
@@ -44,11 +44,7 @@ func extractAllVolumeConfigs() ([]*VolumeConfig, error) {
 	return res, nil
 }
 
-func extractVolumeConfig(volumeName string) (*VolumeConfig, error) {
-	return extractVolumeConfigByPath(volumeObjBasePath + volumeName + ".gob")
-}
-
-func extractAllPoolConfigs() ([]*PoolConfig, error) {
+func ExtractAllPoolConfigs() ([]*PoolConfig, error) {
 	dir, err := os.ReadDir(poolObjBasePath)
 	if err != nil {
 		return nil, err
@@ -68,11 +64,7 @@ func extractAllPoolConfigs() ([]*PoolConfig, error) {
 	return res, nil
 }
 
-func extractPoolConfig(poolName string) (*PoolConfig, error) {
-	return extractPoolConfigByPath(poolName)
-}
-
-func saveVolumeConfig(volumeConfig *VolumeConfig) error {
+func SaveVolumeConfig(volumeConfig *VolumeConfig) error {
 	objFile, err := os.OpenFile(
 		volumeObjBasePath+volumeConfig.Name+".gob",
 		os.O_WRONLY|os.O_CREATE|os.O_SYNC,
@@ -88,7 +80,7 @@ func saveVolumeConfig(volumeConfig *VolumeConfig) error {
 	return volConfigEncoder.Encode(volumeConfig)
 }
 
-func savePoolConfig(poolConfig *PoolConfig) error {
+func SavePoolConfig(poolConfig *PoolConfig) error {
 	objFile, err := os.OpenFile(
 		poolObjBasePath+poolConfig.Name+".gob",
 		os.O_WRONLY|os.O_CREATE|os.O_SYNC,

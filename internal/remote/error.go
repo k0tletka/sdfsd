@@ -8,6 +8,8 @@ func (r RemoteError) Error() string {
 
 const (
 	ErrRemoteServerNotInitialized RemoteError = "remote server not initialized"
-
-	ErrRemoteServerNotFound RemoteError = "remote server with such name not found"
+	ErrRemoteAlreadyInitialized   RemoteError = "remote already initialized"
+	ErrRemoteServerNotFound       RemoteError = "remote server with such name not found"
+	ErrRemoteAlreadyExist         RemoteError = "remote server already exist"
+	ErrServerNameCantBeEmpty      RemoteError = "remote server name cant be empty"
 )

@@ -2,6 +2,7 @@ package fs
 
 import (
 	"github.com/k0tletka/sdfsd/internal/fs/enum"
+	fsinternal "github.com/k0tletka/sdfsd/internal/fs/internal"
 	"golang.org/x/sys/unix"
 	"os"
 )
@@ -19,41 +20,37 @@ type PoolCreateRequest struct {
 }
 
 type VolumeDispatcher struct {
-	volumes []Volume
-	pools   []Pool
+	volumes []fsinternal.Volume
+	pools   []fsinternal.Pool
 }
 
 func NewVolumeDispatcher() (*VolumeDispatcher, error) {
-	volumeSettings, err := extractAllVolumeConfigs()
+	volumeSettings, err := fsinternal.ExtractAllVolumeConfigs()
 	if err != nil {
 		return nil, err
 	}
-	volumes := make([]Volume, 0, len(volumeSettings))
+	volumes := make([]fsinternal.Volume, 0, len(volumeSettings))
 
 	for _, volumeSetting := range volumeSettings {
-		newVolume := Volume{}
-		newVolume.applySettings(volumeSetting)
-		if err := newVolume.checkVolumeHealth(); err != nil {
+		newVolume, err := fsinternal.NewVolumeFromConfig(volumeSetting)
+		if err != nil {
 			return nil, err
 		}
-
-		volumes = append(volumes, newVolume)
+		volumes = append(volumes, *newVolume)
 	}
 
-	poolSettings, err := extractAllPoolConfigs()
+	poolSettings, err := fsinternal.ExtractAllPoolConfigs()
 	if err != nil {
 		return nil, err
 	}
-	pools := make([]Pool, 0, len(poolSettings))
+	pools := make([]fsinternal.Pool, 0, len(poolSettings))
 
 	for _, poolSetting := range poolSettings {
-		newPool := Pool{}
-		newPool.applySettings(poolSetting)
-		if err := newPool.checkPoolHealth(); err != nil {
+		newPool, err := fsinternal.NewPoolFromConfig(poolSetting)
+		if err != nil {
 			return nil, err
 		}
-
-		pools = append(pools, newPool)
+		pools = append(pools, *newPool)
 	}
 
 	return &VolumeDispatcher{
@@ -62,13 +59,13 @@ func NewVolumeDispatcher() (*VolumeDispatcher, error) {
 	}, nil
 }
 
-func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (Volume, error) {
+func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (fsinternal.Volume, error) {
 	// First, check create conditions so all is okay to create new volume
 	if err := v.checkCreateConditions(req); err != nil {
-		return Volume{}, err
+		return fsinternal.Volume{}, err
 	}
 
-	newVolume := Volume{
+	newVolume := fsinternal.Volume{
 		Name:        req.Name,
 		StoragePath: req.StoragePath,
 		VolumeSize:  req.AllocateSize,
@@ -77,69 +74,64 @@ func (v *VolumeDispatcher) CreateNewVolume(req VolumeCreateRequest) (Volume, err
 	if req.PoolName != "" {
 		pool, err := v.GetPool(req.PoolName)
 		if err != nil {
-			return Volume{}, err
+			return fsinternal.Volume{}, err
 		}
 
-		if err := newVolume.connectVolumeToPool(&pool); err != nil {
-			return Volume{}, err
+		if err := newVolume.ConnectVolumeToPool(&pool); err != nil {
+			return fsinternal.Volume{}, err
 		}
 	}
 
-	if err := saveVolumeConfig(newVolume.dumpSettings()); err != nil {
-		return Volume{}, err
-	}
-
+	v.volumes = append(v.volumes, newVolume)
 	return newVolume, nil
 }
 
-func (v *VolumeDispatcher) CreateNewPool(req PoolCreateRequest) (Pool, error) {
+func (v *VolumeDispatcher) CreateNewPool(req PoolCreateRequest) (fsinternal.Pool, error) {
 	if _, err := v.GetPool(req.PoolName); err == nil {
-		return Pool{}, ErrPoolAlreadyExist
+		return fsinternal.Pool{}, ErrPoolAlreadyExist
 	}
 
-	newPool := Pool{
+	newPool := fsinternal.Pool{
 		Name:     req.PoolName,
 		WorkMode: req.Mode,
 	}
 
-	if err := newPool.syncPoolWithRemoteServers(); err != nil {
-		return Pool{}, err
-	}
-	if err := savePoolConfig(newPool.dumpSettings()); err != nil {
-		return Pool{}, err
+	if err := newPool.SyncPoolWithRemoteServers(); err != nil {
+		return fsinternal.Pool{}, err
 	}
 
+	v.pools = append(v.pools, newPool)
 	return newPool, nil
 }
 
-func (v *VolumeDispatcher) GetVolume(volumeName string) (Volume, error) {
+func (v *VolumeDispatcher) GetVolume(volumeName string) (fsinternal.Volume, error) {
 	for _, volume := range v.volumes {
 		if volume.Name == volumeName {
 			return volume, nil
 		}
 	}
 
-	return Volume{}, ErrNotFound
+	return fsinternal.Volume{}, ErrNotFound
 }
 
-func (v *VolumeDispatcher) GetVolumes() []Volume {
-	res := make([]Volume, len(v.volumes))
+func (v *VolumeDispatcher) GetVolumes() []fsinternal.Volume {
+	res := make([]fsinternal.Volume, len(v.volumes))
 	copy(res, v.volumes)
 	return res
 }
 
-func (v *VolumeDispatcher) GetPool(poolName string) (Pool, error) {
+func (v *VolumeDispatcher) GetPool(poolName string) (fsinternal.Pool, error) {
 	for _, pool := range v.pools {
 		if pool.Name == poolName {
 			return pool, nil
 		}
 	}
 
-	return Pool{}, ErrNotFound
+	return fsinternal.Pool{}, ErrNotFound
 }
 
-func (v *VolumeDispatcher) GetPools() []Pool {
-	res := make([]Pool, len(v.pools))
+func (v *VolumeDispatcher) GetPools() []fsinternal.Pool {
+	res := make([]fsinternal.Pool, len(v.pools))
 	copy(res, v.pools)
 	return res
 }

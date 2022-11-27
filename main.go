@@ -14,11 +14,6 @@ import (
 )
 
 func main() {
-	srvConfig, err := initDependencies()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	ctx, _ := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT,
@@ -28,6 +23,11 @@ func main() {
 	)
 
 	if err := remote.InitRemoteServersController(ctx); err != nil {
+		log.Fatalln(err)
+	}
+
+	srvConfig, err := initDependencies()
+	if err != nil {
 		log.Fatalln(err)
 	}
 

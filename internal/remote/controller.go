@@ -63,7 +63,13 @@ func (r *RemoteServer) InitializeRemoteServer(ctx context.Context) error {
 	if err := r.LoadRemotePools(); err != nil {
 		return err
 	}
-	return r.LoadRemoteVolumes()
+
+	if err := r.LoadRemoteVolumes(); err != nil {
+		return err
+	}
+
+	r.isInitialized = true
+	return nil
 }
 
 func (r *RemoteServer) LoadRemoteVolumes() error {
@@ -151,14 +157,45 @@ func InitRemoteServersController(ctx context.Context) error {
 	return nil
 }
 
-func (r RemoteServerController) GetRemoteServer(serverName string) (*RemoteServer, error) {
+func (r *RemoteServerController) GetRemoteServers() []RemoteServer {
+	res := make([]RemoteServer, len(r.remoteServers))
+	copy(res, r.remoteServers)
+	return res
+}
+
+func (r *RemoteServerController) GetRemoteServer(serverName string) (RemoteServer, error) {
 	for _, server := range r.remoteServers {
 		if server.ServerName == serverName {
-			return &server, nil
+			return server, nil
 		}
 	}
 
-	return nil, ErrRemoteServerNotFound
+	return RemoteServer{}, ErrRemoteServerNotFound
+}
+
+func (r *RemoteServerController) AddNewRemoteServer(ctx context.Context, newServer *RemoteServer) error {
+	if newServer.IsInitialized() {
+		return ErrRemoteAlreadyInitialized
+	}
+
+	// Apply some validation
+	if newServer.ServerName == "" {
+		return ErrServerNameCantBeEmpty
+	}
+
+	for _, server := range r.remoteServers {
+		if server.ServerName == newServer.ServerName || server.ConnectionString == newServer.ConnectionString {
+			return ErrRemoteAlreadyExist
+		}
+	}
+
+	// Process adding
+	if err := newServer.InitializeRemoteServer(ctx); err != nil {
+		return err
+	}
+
+	r.remoteServers = append(r.remoteServers, *newServer)
+	return nil
 }
 
 func loadRemoteServers(ctx context.Context) ([]RemoteServer, error) {
